@@ -18,7 +18,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['academies']['Insert']>
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {
@@ -31,6 +38,7 @@ export interface Database {
           kakao_refresh_token: string | null
           kakao_token_expires_at: string | null
           monthly_quota_minutes: number
+          session_version: number
           created_at: string
           updated_at: string
         }
@@ -44,10 +52,25 @@ export interface Database {
           kakao_refresh_token?: string | null
           kakao_token_expires_at?: string | null
           monthly_quota_minutes?: number
+          session_version?: number
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['users']['Insert']>
+        Update: {
+          id?: string
+          academy_id?: string | null
+          auth_id?: string | null
+          name?: string
+          email?: string
+          kakao_access_token?: string | null
+          kakao_refresh_token?: string | null
+          kakao_token_expires_at?: string | null
+          monthly_quota_minutes?: number
+          session_version?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       rooms: {
         Row: {
@@ -74,7 +97,19 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['rooms']['Insert']>
+        Update: {
+          id?: string
+          teacher_id?: string
+          invite_token?: string
+          scheduled_at?: string | null
+          duration_limit?: number
+          status?: 'pending' | 'active' | 'completed' | 'cancelled'
+          started_at?: string | null
+          ended_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       consultations: {
         Row: {
@@ -101,7 +136,19 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['consultations']['Insert']>
+        Update: {
+          id?: string
+          room_id?: string
+          teacher_id?: string
+          transcript?: TranscriptEntry[] | null
+          ai_summary?: string | null
+          repeat_count?: number
+          kakao_sent?: boolean
+          kakao_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       signaling_messages: {
         Row: {
@@ -120,9 +167,21 @@ export interface Database {
           payload: Json
           created_at?: string
         }
-        Update: never
+        Update: {
+          id?: string
+          room_id?: string
+          sender_role?: 'teacher' | 'parent'
+          type?: 'offer' | 'answer' | 'ice-candidate'
+          payload?: Json
+          created_at?: string
+        }
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
 
