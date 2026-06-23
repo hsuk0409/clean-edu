@@ -33,15 +33,13 @@ export async function GET(request: NextRequest) {
     // 2. 카카오 사용자 정보 조회
     const userInfo = await getUserInfo(tokens.accessToken)
 
-    if (!userInfo.email) {
-      return NextResponse.redirect(
-        new URL('/login?error=카카오 계정에 이메일이 없습니다.', APP_URL)
-      )
-    }
-
     // 3. DB에서 사용자 조회 또는 신규 생성
+    // TODO(비즈니스 앱 전환 후): kakaoId 대신 email로 식별하도록 변경
+    //   - upsertUser(db, userInfo.email, userInfo.name) 로 교체
+    //   - email 없을 경우 에러 처리 복원
+    //   - supabase/migrations/switch_to_email_identifier.sql 실행
     const db = createAdminClient()
-    const { userId, sessionVersion } = await upsertUser(db, userInfo.email, userInfo.name)
+    const { userId, sessionVersion } = await upsertUser(db, userInfo.kakaoId, userInfo.name, userInfo.email || null)
 
     // 4. Kakao 토큰 암호화 저장
     await saveTokens(db, userId, tokens)
@@ -49,7 +47,7 @@ export async function GET(request: NextRequest) {
     // 5. JWT 세션 생성 (sessionVersion 포함) 및 쿠키 설정
     const sessionToken = await signSession({
       userId,
-      email: userInfo.email,
+      email: userInfo.email || '',
       name: userInfo.name,
       sessionVersion,
     })
@@ -67,23 +65,24 @@ export async function GET(request: NextRequest) {
 
 async function upsertUser(
   db: ReturnType<typeof createAdminClient>,
-  email: string,
-  name: string
+  kakaoId: number,
+  name: string,
+  email: string | null
 ): Promise<{ userId: string; sessionVersion: number }> {
   const { data: existing } = await db
     .from('users')
     .select('id, session_version')
-    .eq('email', email)
+    .eq('kakao_id', kakaoId)
     .maybeSingle()
 
   if (existing) {
-    await db.from('users').update({ name }).eq('id', existing.id)
+    await db.from('users').update({ name, ...(email && { email }) }).eq('id', existing.id)
     return { userId: existing.id, sessionVersion: existing.session_version }
   }
 
   const { data: created, error } = await db
     .from('users')
-    .insert({ email, name })
+    .insert({ kakao_id: kakaoId, name, ...(email && { email }) })
     .select('id, session_version')
     .single()
 

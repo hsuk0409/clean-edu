@@ -33,7 +33,8 @@ export interface Database {
           academy_id: string | null
           auth_id: string | null
           name: string
-          email: string
+          email: string | null
+          kakao_id: number | null
           kakao_access_token: string | null
           kakao_refresh_token: string | null
           kakao_token_expires_at: string | null
@@ -47,7 +48,8 @@ export interface Database {
           academy_id?: string | null
           auth_id?: string | null
           name: string
-          email: string
+          email?: string | null
+          kakao_id?: number | null
           kakao_access_token?: string | null
           kakao_refresh_token?: string | null
           kakao_token_expires_at?: string | null
@@ -61,7 +63,8 @@ export interface Database {
           academy_id?: string | null
           auth_id?: string | null
           name?: string
-          email?: string
+          email?: string | null
+          kakao_id?: number | null
           kakao_access_token?: string | null
           kakao_refresh_token?: string | null
           kakao_token_expires_at?: string | null

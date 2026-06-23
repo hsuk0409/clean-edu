@@ -24,7 +24,7 @@ export function buildAuthUrl(config: KakaoOAuthConfig, state?: string): string {
     client_id: config.restApiKey,
     redirect_uri: config.redirectUri,
     response_type: 'code',
-    scope: 'profile_nickname,account_email,talk_message',
+    scope: 'profile_nickname,profile_image',
   })
   if (state) params.set('state', state)
   return `${KAKAO_AUTH_BASE}/oauth/authorize?${params}`
