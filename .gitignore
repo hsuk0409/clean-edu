@@ -89,6 +89,9 @@ web_modules/
 .next/
 out/
 
+# Next.js auto-generated type file (do not edit or commit)
+next-env.d.ts
+
 # Nuxt.js build and generate (https://nuxtjs.org/)
 .nuxt
 dist/
