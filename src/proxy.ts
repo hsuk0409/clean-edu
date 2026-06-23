@@ -5,7 +5,7 @@ import { verifySession } from '@/lib/session/jwt'
 const PROTECTED_PATHS = ['/dashboard', '/rooms']
 const AUTH_ONLY_PATHS = ['/login']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = getTokenFromRequest(request)
   const session = token ? await verifySession(token) : null
