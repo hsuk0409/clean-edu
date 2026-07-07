@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client'
 import { sendSignal, fetchBacklogSignals, subscribeToSignals } from '@/lib/webrtc/signaling'
 import { sendTranscript, subscribeToTranscripts } from '@/lib/webrtc/transcript'
 import { playAnnouncementTrack, type AnnouncementHandle } from '@/lib/webrtc/announcement'
+import { describeMicError } from '@/lib/webrtc/mic-error'
 import { RepetitionDetector } from '@/lib/detection/repetition'
 import { useSpeechRecognition } from './useSpeechRecognition'
 import type { CallRole, SignalPayload } from '@/lib/webrtc/types'
@@ -140,6 +141,11 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
       } else if (signal.type === 'answer') {
         await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
         await flushPendingCandidates(pc)
+      } else if (signal.type === 'hangup') {
+        // 상대가 명시적으로 종료 — connectionState 변화(지연되거나 멈출 수 있음)를 기다리지 않고 즉시 반영
+        pc.close()
+        localStreamRef.current?.getTracks().forEach((t) => t.stop())
+        setConnectionState('closed')
       } else if (pc.remoteDescription) {
         await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
       } else {
@@ -218,9 +224,7 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
         }
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : '마이크 권한을 확인하고 다시 시도해주세요.'
-          )
+          setError(describeMicError(err))
         }
       }
     }
@@ -279,10 +283,14 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
   const hangUp = useCallback(() => {
     if (holdTimerRef.current) clearInterval(holdTimerRef.current)
     announcementRef.current?.stop()
+    // 상대에게 즉시 종료를 알림 — best-effort (실패해도 로컬 종료는 계속 진행)
+    sendSignal(createClient(), roomId, role, { type: 'hangup' }).catch((err) =>
+      console.error('[useWebRTCCall] failed to send hangup signal', err)
+    )
     pcRef.current?.close()
     localStreamRef.current?.getTracks().forEach((t) => t.stop())
     setConnectionState('closed')
-  }, [])
+  }, [roomId, role])
 
   return {
     connectionState,

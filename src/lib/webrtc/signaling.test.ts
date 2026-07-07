@@ -34,6 +34,19 @@ describe('sendSignal', () => {
     })
   })
 
+  it('hangup은 payload를 빈 객체로 insert한다', async () => {
+    const { db, lastArgs } = createMockDb({ data: null, error: null })
+
+    await sendSignal(db, 'room-1', 'teacher', { type: 'hangup' })
+
+    expect(lastArgs('insert')?.[0]).toEqual({
+      room_id: 'room-1',
+      sender_role: 'teacher',
+      type: 'hangup',
+      payload: {},
+    })
+  })
+
   it('insert 실패 시 에러를 throw한다', async () => {
     const { db } = createMockDb({ data: null, error: { message: 'boom' } })
 
@@ -58,10 +71,11 @@ describe('fetchBacklogSignals', () => {
     expect(neq?.args).toEqual(['sender_role', 'teacher'])
   })
 
-  it('DB row를 SignalPayload로 변환한다 (offer / ice-candidate)', async () => {
+  it('DB row를 SignalPayload로 변환한다 (offer / ice-candidate / hangup)', async () => {
     const rows = [
       { id: 'a', type: 'offer', payload: { sdp: SDP } },
       { id: 'b', type: 'ice-candidate', payload: { candidate: CANDIDATE } },
+      { id: 'c', type: 'hangup', payload: {} },
     ]
     const { db } = createMockDb({ data: rows, error: null })
 
@@ -70,6 +84,7 @@ describe('fetchBacklogSignals', () => {
     expect(result).toEqual([
       { id: 'a', signal: { type: 'offer', sdp: SDP } },
       { id: 'b', signal: { type: 'ice-candidate', candidate: CANDIDATE } },
+      { id: 'c', signal: { type: 'hangup' } },
     ])
   })
 

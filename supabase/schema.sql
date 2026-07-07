@@ -94,7 +94,7 @@ CREATE TABLE signaling_messages (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id     UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
   sender_role TEXT NOT NULL CHECK (sender_role IN ('teacher', 'parent')),
-  type        TEXT NOT NULL CHECK (type IN ('offer', 'answer', 'ice-candidate')),
+  type        TEXT NOT NULL CHECK (type IN ('offer', 'answer', 'ice-candidate', 'hangup')),
   payload     JSONB NOT NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

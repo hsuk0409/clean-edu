@@ -24,7 +24,11 @@ export async function sendSignal(
   // RTCIceCandidateInit/RTCSessionDescriptionInit는 인덱스 시그니처가 없어 Json과
   // 구조적으로 호환되지 않으므로, 순수 JSON 데이터임을 명시적으로 캐스팅한다.
   const payload = (
-    signal.type === 'ice-candidate' ? { candidate: signal.candidate } : { sdp: signal.sdp }
+    signal.type === 'ice-candidate'
+      ? { candidate: signal.candidate }
+      : signal.type === 'hangup'
+        ? {}
+        : { sdp: signal.sdp }
   ) as unknown as Json
 
   const { error } = await db.from('signaling_messages').insert({
@@ -43,6 +47,9 @@ function rowToSignal(row: SignalRow): SignalPayload {
   const raw = row.payload as Record<string, unknown>
   if (row.type === 'ice-candidate') {
     return { type: 'ice-candidate', candidate: raw.candidate as RTCIceCandidateInit }
+  }
+  if (row.type === 'hangup') {
+    return { type: 'hangup' }
   }
   return { type: row.type, sdp: raw.sdp as RTCSessionDescriptionInit }
 }

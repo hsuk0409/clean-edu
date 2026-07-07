@@ -158,7 +158,7 @@ export interface Database {
           id: string
           room_id: string
           sender_role: 'teacher' | 'parent'
-          type: 'offer' | 'answer' | 'ice-candidate'
+          type: 'offer' | 'answer' | 'ice-candidate' | 'hangup'
           payload: Json
           created_at: string
         }
@@ -166,7 +166,7 @@ export interface Database {
           id?: string
           room_id: string
           sender_role: 'teacher' | 'parent'
-          type: 'offer' | 'answer' | 'ice-candidate'
+          type: 'offer' | 'answer' | 'ice-candidate' | 'hangup'
           payload: Json
           created_at?: string
         }
@@ -174,7 +174,7 @@ export interface Database {
           id?: string
           room_id?: string
           sender_role?: 'teacher' | 'parent'
-          type?: 'offer' | 'answer' | 'ice-candidate'
+          type?: 'offer' | 'answer' | 'ice-candidate' | 'hangup'
           payload?: Json
           created_at?: string
         }

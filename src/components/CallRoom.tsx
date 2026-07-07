@@ -76,6 +76,29 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
     return () => clearInterval(interval)
   }, [connectionState, endCall])
 
+  // 상대가 통화를 끊어 hangup 시그널을 받으면(hook이 connectionState를 'closed'로 전이) 동일하게 종료 처리
+  useEffect(() => {
+    if (connectionState === 'closed') {
+      endCall()
+    }
+  }, [connectionState, endCall])
+
+  // 모바일에서 화면을 아래로 당겨 새로고침하면 통화 연결이 끊기므로, 이 페이지가 떠있는 동안만 막는다.
+  // overscroll-behavior는 실제 스크롤 컨테이너(html/body)에 적용해야 브라우저의 pull-to-refresh를 막을 수 있다.
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overscrollBehaviorY
+    const prevBody = body.style.overscrollBehaviorY
+    html.style.overscrollBehaviorY = 'contain'
+    body.style.overscrollBehaviorY = 'contain'
+
+    return () => {
+      html.style.overscrollBehaviorY = prevHtml
+      body.style.overscrollBehaviorY = prevBody
+    }
+  }, [])
+
   const minutes = Math.floor(remainingSeconds / 60)
   const seconds = remainingSeconds % 60
   const timerText = `${minutes}:${seconds.toString().padStart(2, '0')}`
