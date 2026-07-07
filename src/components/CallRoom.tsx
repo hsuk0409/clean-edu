@@ -30,19 +30,15 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
   const hasStartedRef = useRef(false)
   const hasEndedRef = useRef(false)
 
-  const endCall = useCallback(
-    (reason: 'manual' | 'timeout') => {
-      if (hasEndedRef.current) return
-      hasEndedRef.current = true
-      hangUp()
-      fetch(`/api/rooms/${roomId}/end`, { method: 'POST' }).catch((err) =>
-        console.error('[CallRoom] Failed to mark room ended', err)
-      )
-      onEnded()
-      void reason
-    },
-    [hangUp, onEnded, roomId]
-  )
+  const endCall = useCallback(() => {
+    if (hasEndedRef.current) return
+    hasEndedRef.current = true
+    hangUp()
+    fetch(`/api/rooms/${roomId}/end`, { method: 'POST' }).catch((err) =>
+      console.error('[CallRoom] Failed to mark room ended', err)
+    )
+    onEnded()
+  }, [hangUp, onEnded, roomId])
 
   // 최초 연결 성공 시 방을 active 상태로 전이
   useEffect(() => {
@@ -62,7 +58,7 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
       setRemainingSeconds((prev) => {
         if (prev <= 1) {
           clearInterval(interval)
-          endCall('timeout')
+          endCall()
           return 0
         }
         return prev - 1
@@ -97,7 +93,7 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
           {isMuted ? '🔇' : '🎙️'}
         </button>
         <button
-          onClick={() => endCall('manual')}
+          onClick={endCall}
           className="rounded-full w-14 h-14 flex items-center justify-center bg-red-600 hover:bg-red-500 transition-colors text-xl"
           aria-label="통화 종료"
         >

@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getTokenFromCookies } from '@/lib/session/cookie'
-import { verifySession } from '@/lib/session/jwt'
-import { verifySessionVersion } from '@/lib/session/db-verify'
+import { getVerifiedSession } from '@/lib/session'
 
 /**
  * Dashboard 레이아웃 — 2단계 세션 검증
@@ -13,15 +11,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const token = await getTokenFromCookies()
-  const jwtSession = token ? await verifySession(token) : null
-
-  if (!jwtSession) {
-    redirect('/login')
-  }
-
-  // JWT가 유효해도 session_version이 DB와 다르면 강제 로그인 페이지로
-  const session = await verifySessionVersion(jwtSession)
+  // 쿠키 → JWT 서명 검증 → DB session_version 대조(강제 로그아웃 반영)까지 한 번에
+  const session = await getVerifiedSession()
   if (!session) {
     redirect('/login')
   }

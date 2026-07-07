@@ -133,6 +133,14 @@ CREATE POLICY "signaling_public_read" ON signaling_messages FOR SELECT USING (tr
 CREATE POLICY "signaling_insert" ON signaling_messages FOR INSERT WITH CHECK (true);
 
 -- ============================================================
+-- Realtime Publication
+-- postgres_changes 구독(subscribeToSignals)이 INSERT 이벤트를 받으려면
+-- 테이블이 supabase_realtime publication에 명시적으로 추가되어야 함
+-- (RLS만 열려있고 이 설정이 빠지면 insert는 되지만 이벤트가 발행되지 않음)
+-- ============================================================
+ALTER PUBLICATION supabase_realtime ADD TABLE signaling_messages;
+
+-- ============================================================
 -- 자동 updated_at 트리거
 -- ============================================================
 CREATE OR REPLACE FUNCTION update_updated_at()

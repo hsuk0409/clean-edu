@@ -1,7 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { getTokenFromCookies } from '@/lib/session/cookie'
-import { verifySession } from '@/lib/session/jwt'
-import { verifySessionVersion } from '@/lib/session/db-verify'
+import { getVerifiedSession } from '@/lib/session'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getRoomById } from '@/lib/rooms'
 import { TeacherCallClient } from './TeacherCallClient'
@@ -15,10 +13,7 @@ export default async function TeacherRoomPage({
 }) {
   const { id } = await params
 
-  const token = await getTokenFromCookies()
-  const jwtSession = token ? await verifySession(token) : null
-  const session = jwtSession ? await verifySessionVersion(jwtSession) : null
-
+  const session = await getVerifiedSession()
   if (!session) {
     redirect('/login')
   }
