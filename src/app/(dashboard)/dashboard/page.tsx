@@ -1,5 +1,6 @@
 import { getTokenFromCookies } from '@/lib/session/cookie'
 import { verifySession } from '@/lib/session/jwt'
+import { CreateRoomCard } from './CreateRoomCard'
 
 export const metadata = { title: '대시보드 — 클린에듀' }
 
@@ -20,9 +21,7 @@ export default async function DashboardPage() {
         <StatCard label="AI 요약 전송" value="0건" />
       </div>
 
-      <div className="mt-10 rounded-2xl border border-dashed border-zinc-200 bg-white p-10 text-center">
-        <p className="text-zinc-400 text-sm">통화방 기능은 Milestone 3에서 추가됩니다.</p>
-      </div>
+      <CreateRoomCard />
     </div>
   )
 }
