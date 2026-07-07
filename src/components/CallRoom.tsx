@@ -23,8 +23,16 @@ const CONNECTION_STATE_LABEL: Record<string, string> = {
 }
 
 export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRoomProps) {
-  const { connectionState, isMuted, toggleMute, hangUp, remoteAudioRef, error } =
-    useWebRTCCall(roomId, role)
+  const {
+    connectionState,
+    isMuted,
+    toggleMute,
+    hangUp,
+    remoteAudioRef,
+    error,
+    isHolding,
+    holdRemainingSeconds,
+  } = useWebRTCCall(roomId, role)
 
   const [remainingSeconds, setRemainingSeconds] = useState(durationLimitMinutes * 60)
   const hasStartedRef = useRef(false)
@@ -82,15 +90,24 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
 
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
+      {isHolding && role === 'teacher' && (
+        <div className="rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-300 text-sm px-4 py-3 mb-4 max-w-sm text-center">
+          반복된 발언이 감지되어 잠시 대기 모드로 전환되었습니다.
+          <br />
+          {holdRemainingSeconds}초 후 자동으로 통화가 재개됩니다.
+        </div>
+      )}
+
       <p className="text-5xl font-bold tabular-nums mb-10">{timerText}</p>
 
       <div className="flex items-center gap-4">
         <button
           onClick={toggleMute}
-          className="rounded-full w-14 h-14 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 transition-colors text-xl"
+          disabled={isHolding}
+          className="rounded-full w-14 h-14 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xl"
           aria-label={isMuted ? '음소거 해제' : '음소거'}
         >
-          {isMuted ? '🔇' : '🎙️'}
+          {isMuted || isHolding ? '🔇' : '🎙️'}
         </button>
         <button
           onClick={endCall}

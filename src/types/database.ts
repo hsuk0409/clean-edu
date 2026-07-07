@@ -180,6 +180,30 @@ export interface Database {
         }
         Relationships: []
       }
+      call_transcripts: {
+        Row: {
+          id: string
+          room_id: string
+          speaker_role: 'teacher' | 'parent'
+          text: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          room_id: string
+          speaker_role: 'teacher' | 'parent'
+          text: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          room_id?: string
+          speaker_role?: 'teacher' | 'parent'
+          text?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
