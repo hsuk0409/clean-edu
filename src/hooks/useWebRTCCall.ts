@@ -21,7 +21,7 @@ import type { CallRole, SignalPayload } from '@/lib/webrtc/types'
 
 const ICE_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }]
 const HOLD_DURATION_SECONDS = 60
-const ANNOUNCEMENT_AUDIO_SRC = '/hold-announcement.mp3'
+const ANNOUNCEMENT_AUDIO_SRC = '/hold-announcement.m4a'
 
 export type CallConnectionState = RTCPeerConnectionState | 'requesting-mic'
 
