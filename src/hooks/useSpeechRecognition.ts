@@ -85,19 +85,25 @@ export function useSpeechRecognition({
       }, delay)
     }
 
+    // [STT-DIAG] 진단용 계측 — 원인 확정 후 제거 예정
+    console.log('[STT-DIAG] effect start — enabled:', enabled, 'supported:', isSupported, 'ua:', navigator.userAgent)
+
     recognition.onstart = () => {
       capturedAudio = false
+      console.log('[STT-DIAG] onstart')
     }
 
     recognition.onaudiostart = () => {
       capturedAudio = true
       failStreak = 0
       setIsUnavailable(false)
+      console.log('[STT-DIAG] onaudiostart (마이크 오디오 캡처 시작됨)')
     }
 
     recognition.onresult = (event) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
+        console.log('[STT-DIAG] onresult isFinal:', result.isFinal, 'text:', result[0]?.transcript)
         if (result.isFinal) {
           const text = result[0].transcript.trim()
           if (text) onFinalResultRef.current(text)
@@ -106,11 +112,13 @@ export function useSpeechRecognition({
     }
 
     recognition.onerror = (event) => {
+      console.log('[STT-DIAG] onerror:', event.error, event.message)
       if (event.error === 'no-speech' || event.error === 'aborted') return
       console.error('[useSpeechRecognition] error', event.error)
     }
 
     recognition.onend = () => {
+      console.log('[STT-DIAG] onend — capturedAudio:', capturedAudio, 'failStreak:', failStreak)
       scheduleRestart()
     }
 

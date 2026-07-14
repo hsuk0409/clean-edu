@@ -177,7 +177,10 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
             remoteAudioRef.current.srcObject = event.streams[0]
           }
         }
-        pc.onconnectionstatechange = () => setConnectionState(pc.connectionState)
+        pc.onconnectionstatechange = () => {
+          console.log('[STT-DIAG] role:', role, 'connectionState →', pc.connectionState)
+          setConnectionState(pc.connectionState)
+        }
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             sendSignal(db, roomId, role, {
@@ -249,6 +252,7 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
   // 자신의 발화를 STT로 인식해 상대에게 중계 (연결된 이후에만 — 대기 중 잡음 방지)
   const handleFinalResult = useCallback(
     (text: string) => {
+      console.log('[STT-DIAG] handleFinalResult — role:', role, 'text:', text)
       sendTranscript(getTranscriptDb(), roomId, role, text).catch((err) =>
         console.error('[useWebRTCCall] failed to send transcript', err)
       )
@@ -259,12 +263,14 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
     enabled: connectionState === 'connected',
     onFinalResult: handleFinalResult,
   })
+  console.log('[STT-DIAG] role:', role, 'connectionState:', connectionState, 'sttUnavailable:', sttUnavailable)
 
   // 교사만 학부모 발화의 반복을 감지해 hold를 트리거
   useEffect(() => {
     if (role !== 'teacher') return
 
     const unsubscribe = subscribeToTranscripts(getTranscriptDb(), roomId, (entry) => {
+      console.log('[STT-DIAG] teacher received transcript —', entry.speakerRole, ':', entry.text)
       if (entry.speakerRole !== 'parent') return
       const { triggered } = detectorRef.current.push(entry.text)
       if (triggered) enterHold()
