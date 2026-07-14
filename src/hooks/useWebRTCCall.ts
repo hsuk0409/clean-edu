@@ -36,6 +36,8 @@ export interface UseWebRTCCallResult {
   isHolding: boolean
   /** hold 종료까지 남은 초 (holding이 아니면 0) */
   holdRemainingSeconds: number
+  /** STT가 오디오를 잡지 못해 실시간 반복 감지가 동작하지 않는 상태 (마이크 경합 등) */
+  sttUnavailable: boolean
 }
 
 export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResult {
@@ -253,7 +255,10 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
     },
     [roomId, role, getTranscriptDb]
   )
-  useSpeechRecognition({ enabled: connectionState === 'connected', onFinalResult: handleFinalResult })
+  const { isUnavailable: sttUnavailable } = useSpeechRecognition({
+    enabled: connectionState === 'connected',
+    onFinalResult: handleFinalResult,
+  })
 
   // 교사만 학부모 발화의 반복을 감지해 hold를 트리거
   useEffect(() => {
@@ -301,5 +306,6 @@ export function useWebRTCCall(roomId: string, role: CallRole): UseWebRTCCallResu
     error,
     isHolding,
     holdRemainingSeconds,
+    sttUnavailable,
   }
 }

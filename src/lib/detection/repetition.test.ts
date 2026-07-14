@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { RepetitionDetector, similarity } from './repetition'
+import { RepetitionDetector, similarity, splitRepeatedUnits } from './repetition'
 
 describe('similarity', () => {
   it('동일 문자열은 1이다', () => {
@@ -73,5 +73,42 @@ describe('RepetitionDetector', () => {
     const result = detector.push('환불해주세요')
     expect(result.triggered).toBe(false)
     expect(result.count).toBe(1)
+  })
+
+  it('한 문장에 같은 말이 합쳐지면(STT 병합) 그 횟수만큼 집계해 트리거한다', () => {
+    const detector = new RepetitionDetector({ requiredRepeats: 3 })
+    const result = detector.push('안녕하세요 안녕하세요 안녕하세요')
+    expect(result.count).toBe(3)
+    expect(result.triggered).toBe(true)
+  })
+
+  it('병합된 반복과 이후 개별 발화가 함께 누적된다', () => {
+    const detector = new RepetitionDetector({ requiredRepeats: 3 })
+    expect(detector.push('환불해주세요 환불해주세요').triggered).toBe(false) // count 2
+    expect(detector.push('환불해주세요').triggered).toBe(true) // count 3
+  })
+
+  it('일부만 겹치는 정상 문장은 반복으로 오인하지 않는다', () => {
+    const detector = new RepetitionDetector({ requiredRepeats: 3 })
+    const result = detector.push('네 네 네 알겠습니다')
+    expect(result.count).toBe(1)
+    expect(result.triggered).toBe(false)
+  })
+})
+
+describe('splitRepeatedUnits', () => {
+  it('공백으로 반복된 동일 토큰을 횟수로 분해한다', () => {
+    expect(splitRepeatedUnits('안녕하세요 안녕하세요 안녕하세요', 0.5)).toEqual({
+      unit: '안녕하세요',
+      times: 3,
+    })
+  })
+
+  it('공백 없이 붙은 정확한 주기 반복도 분해한다', () => {
+    expect(splitRepeatedUnits('안녕안녕안녕', 0.5)).toEqual({ unit: '안녕', times: 3 })
+  })
+
+  it('반복이 아닌 일반 문장은 times 1로 둔다', () => {
+    expect(splitRepeatedUnits('환불 해주세요', 0.5).times).toBe(1)
   })
 })

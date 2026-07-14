@@ -43,6 +43,8 @@ interface SpeechRecognition extends EventTarget {
   onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null
   onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null
   onend: ((this: SpeechRecognition, ev: Event) => void) | null
+  onstart: ((this: SpeechRecognition, ev: Event) => void) | null
+  onaudiostart: ((this: SpeechRecognition, ev: Event) => void) | null
 }
 
 interface SpeechRecognitionConstructor {

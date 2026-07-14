@@ -32,6 +32,7 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
     error,
     isHolding,
     holdRemainingSeconds,
+    sttUnavailable,
   } = useWebRTCCall(roomId, role)
 
   const [remainingSeconds, setRemainingSeconds] = useState(durationLimitMinutes * 60)
@@ -112,6 +113,14 @@ export function CallRoom({ roomId, role, durationLimitMinutes, onEnded }: CallRo
       </p>
 
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+
+      {sttUnavailable && connectionState === 'connected' && (
+        <div className="rounded-lg bg-zinc-500/10 border border-zinc-500/40 text-zinc-300 text-sm px-4 py-3 mb-4 max-w-sm text-center">
+          음성 인식을 시작할 수 없어 실시간 반복 감지가 동작하지 않습니다.
+          <br />
+          한 기기에서 여러 통화 창을 열면 마이크가 충돌할 수 있어요 — 서로 다른 기기에서 접속해 주세요.
+        </div>
+      )}
 
       {isHolding && role === 'teacher' && (
         <div className="rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-300 text-sm px-4 py-3 mb-4 max-w-sm text-center">
